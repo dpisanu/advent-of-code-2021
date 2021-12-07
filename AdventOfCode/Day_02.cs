@@ -1,17 +1,17 @@
 ﻿namespace AdventOfCode;
 
-public class Day_01 : BaseDay
+public class Day_02 : BaseDay
 {
-    private readonly int[] _input;
+    private readonly string[] _input;
 
-    public Day_01()
+    public Day_02()
     {
         _input = ParseInput(InputFilePath);
     }
 
     /// <summary>
-    ///     How many measurements are larger than the previous measurement?
-    ///     (There is no measurement before the first measurement.)
+    ///     Calculate the horizontal position and depth you would have after following the planned course. 
+    ///     What do you get if you multiply your final horizontal position by your final depth?
     /// </summary>
     public override ValueTask<string> Solve_1() => Solve1();
 
@@ -45,8 +45,8 @@ public class Day_01 : BaseDay
         return new($"Solution to {ClassPrefix} {CalculateIndex()}, part 2 -> {increases}");
     }
 
-    private static int[] ParseInput(string path) => 
-        File.ReadAllText(path).Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+    private static string[] ParseInput(string path) => 
+        File.ReadAllText(path).Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
     private static int IncreaseCounts(int[] input)
     {
