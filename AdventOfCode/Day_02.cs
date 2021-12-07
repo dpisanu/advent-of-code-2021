@@ -99,33 +99,18 @@ public class Day_02 : BaseDay
 
     private ValueTask<string> Solve1 ()
     {
-        var position = new Position(0L);
-
-        foreach(var direction in _input)
-        {
-            switch (direction.Item1)
-            {
-                case Direction.forward:
-                    position.Forward(direction.Item2);
-                    break;
-                case Direction.up:
-                    position.Up(direction.Item2);
-                    break;
-
-                case Direction.down:
-                    position.Down(direction.Item2);
-                    break;
-            }
-        }
-
-        var depth = position.X * position.Y;
+        var depth = CalculatePosition(new Position(0L));
         return new($"Solution to {ClassPrefix} {CalculateIndex()}, part 1 is {depth}");
     }
 
     private ValueTask<string> Solve2()
     {
-        var position = new PositionWithAim(0L);
+        var depth = CalculatePosition(new PositionWithAim(0L));
+        return new($"Solution to {ClassPrefix} {CalculateIndex()}, part 2 is {depth}");
+    }
 
+    private long CalculatePosition(BasePosition position)
+    {
         foreach (var direction in _input)
         {
             switch (direction.Item1)
@@ -143,8 +128,7 @@ public class Day_02 : BaseDay
             }
         }
 
-        var depth = position.X * position.Y;
-        return new($"Solution to {ClassPrefix} {CalculateIndex()}, part 2 is {depth}");
+        return position.X * position.Y;
     }
 
     private static IEnumerable<(Direction, long)> ParseInput(string path)
