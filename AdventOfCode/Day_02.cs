@@ -2,7 +2,79 @@
 
 public class Day_02 : BaseDay
 {
-    private readonly string[] _input;
+    private readonly IEnumerable<(Direction, long)> _input;
+
+    enum Direction
+    {
+        forward,
+        down,
+        up
+    }
+
+    private abstract class BasePosition
+    {
+        public BasePosition(long startValue)
+        {
+            X = startValue;
+            Y = startValue;
+        }
+
+        public long X { internal set; get; }
+        public long Y { internal set; get; }
+
+        public abstract void Forward(long points);
+
+        public abstract void Down(long points);
+
+        public abstract void Up(long points);
+    }
+
+    private class Position : BasePosition
+    {
+        public Position(long startValue) : base(startValue)
+        { }
+
+        public override void Forward (long points)
+        {
+            X += points;
+        }
+
+        public override void Down(long points)
+        {
+            Y += points;
+        }
+
+        public override void Up(long points)
+        {
+            Y -= points;
+        }
+    }
+
+    private class PositionWithAim : BasePosition
+    {
+        public PositionWithAim(long startValue) : base (startValue) 
+        {
+            Aim = startValue;
+        }
+
+        public long Aim { internal set; get; }
+
+        public override void Forward(long points)
+        {
+            X += points;
+            Y += Aim * points;
+        }
+
+        public override void Down(long points)
+        {
+            Aim += points;
+        }
+
+        public override void Up(long points)
+        {
+            Aim -= points;
+        }
+    }
 
     public Day_02()
     {
@@ -16,48 +88,93 @@ public class Day_02 : BaseDay
     public override ValueTask<string> Solve_1() => Solve1();
 
     /// <summary>
-    ///     Your goal now is to count the number of times the sum of measurements 
-    ///     in this sliding window increases from the previous sum.
-    ///     Compare A with B, then compare B with C, then C with D, and so on. 
-    ///     Stop when there aren't enough measurements left to create a new three-measurement sum.
+    ///     In addition to horizontal position and depth, you'll also need to track a third value, aim, which also starts at 0.
+    ///     - down X increases your aim by X units.
+    ///     - up X decreases your aim by X units.
+    ///     - forward X does two things:
+    ///     -- It increases your horizontal position by X units.
+    ///     -- It increases your depth by your aim multiplied by X.
     /// </summary>
     public override ValueTask<string> Solve_2() => Solve2();
 
     private ValueTask<string> Solve1 ()
     {
-        int increases = IncreaseCounts(_input);
-        return new($"Solution to {ClassPrefix} {CalculateIndex()}, part 1 -> {increases}");
+        var position = new Position(0L);
+
+        foreach(var direction in _input)
+        {
+            switch (direction.Item1)
+            {
+                case Direction.forward:
+                    position.Forward(direction.Item2);
+                    break;
+                case Direction.up:
+                    position.Up(direction.Item2);
+                    break;
+
+                case Direction.down:
+                    position.Down(direction.Item2);
+                    break;
+            }
+        }
+
+        var depth = position.X * position.Y;
+        return new($"Solution to {ClassPrefix} {CalculateIndex()}, part 1 is {depth}");
     }
 
     private ValueTask<string> Solve2()
     {
-        var range = 3;
-        var intermediateList = new List<int>();
+        var position = new PositionWithAim(0L);
 
-        for (int position = 0; position < _input.Length - 2; position++)
+        foreach (var direction in _input)
         {
-            var threeRange = new Range(position, position + range);
-
-            var sumOfThree = _input.Take(threeRange).Sum();
-            intermediateList.Add(sumOfThree);
-        }
-        int increases = IncreaseCounts(intermediateList.ToArray());
-        return new($"Solution to {ClassPrefix} {CalculateIndex()}, part 2 -> {increases}");
-    }
-
-    private static string[] ParseInput(string path) => 
-        File.ReadAllText(path).Split('\n', StringSplitOptions.RemoveEmptyEntries);
-
-    private static int IncreaseCounts(int[] input)
-    {
-        int increases = 0;
-        for (int position = 1; position < input.Length; position++)
-        {
-            if (input[position] > input[position - 1])
+            switch (direction.Item1)
             {
-                increases++;
+                case Direction.forward:
+                    position.Forward(direction.Item2);
+                    break;
+                case Direction.up:
+                    position.Up(direction.Item2);
+                    break;
+
+                case Direction.down:
+                    position.Down(direction.Item2);
+                    break;
             }
         }
-        return increases;
+
+        var depth = position.X * position.Y;
+        return new($"Solution to {ClassPrefix} {CalculateIndex()}, part 2 is {depth}");
+    }
+
+    private static IEnumerable<(Direction, long)> ParseInput(string path)
+    {
+        var directionMap = new List<(Direction, long)>();
+        var fileConent = File.ReadAllText(path).Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        foreach (var line in fileConent.Select(x => x.Split(' ')))
+        {
+            var direction = line.First();
+            var steps = Convert.ToInt64(line.Last());
+
+            switch (direction)
+            {
+                case "forward":
+                    directionMap.Add(new (Direction.forward, steps));
+                    break;
+                case "down":
+                    directionMap.Add(new(Direction.down, steps));
+                    break;
+
+                case "up":
+                    directionMap.Add(new(Direction.up, steps));
+                    break;
+
+                default:
+                    directionMap.Add(default);
+                    break;
+            }            
+        }
+
+        return directionMap;
     }
 }
